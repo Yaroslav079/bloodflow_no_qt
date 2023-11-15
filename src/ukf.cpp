@@ -56,9 +56,7 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 7> &Teta) {
     task.set_path_to_brachial_data(this -> base_path);
     rescaler.create_wk_distribution(Teta(6), Teta(5));
     task.set_up(this -> blood_config, this -> heart_config);
-    // dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I4(Teta(0));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R4(Teta(0));
-    // dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I1(Teta(2));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R1(Teta(1));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_PveinPressure(Teta(2));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_Kp(Teta(3));
@@ -75,14 +73,11 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 7> &Teta, const st
     task.set_path_to_brachial_data(base_path);
     rescaler.create_wk_distribution(Teta(6), Teta(5));
     task.set_up(blood_config, heart_config);
-    // dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I4(Teta(0));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R4(Teta(0));
-    // dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I1(Teta(2));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R1(Teta(1));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_PveinPressure(Teta(2));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_Kp(Teta(3));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_Kf(Teta(4));
-
 }
 
 void Ukf::run_task(Task &task, Eigen::Vector3d& X) {
@@ -133,22 +128,32 @@ void Ukf::define_initial_conditions() {
     typedef ::Edge<Eigen::Matrix, double, Eigen::Dynamic> Edge;
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
 
+    /*
+    old-fashioned first definitions based on inner model params
+
     Task task;
     task.set_path_to_brachial_data(this -> base_path);
     task.set_up(this -> blood_config, this -> heart_config);
     run_task(task, X_n);
 
-    // Teta_n(0) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_I4();
     Teta_n(0) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_R4();
-    // Teta_n(2) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_I1();
     Teta_n(1) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_R1();
     Teta_n(2) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_PveinPressure();
     Teta_n(5) = rescaler.find_total_compliance();
     Teta_n(6) = rescaler.find_total_resistance();
     Teta_n(3) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_Kp();
     Teta_n(4) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_Kf();
-    // Teta_n(7) = rescaler.find_p_out();
+    */
 
+    // new way of defining based on closer base
+    Eigen::MatrixXd Teta_dynamic;
+    std::ifstream param_file(base_path + "/data/back/base.csv");
+    read_csv_matrix(param_file, Teta_dynamic, 7, 1);
+    Teta_n = Teta_dynamic;
+    param_file.close();
+    Task task;
+    set_up_task(task, Teta_n);
+    run_task(task, X_n);
 
     Teta_initial = Teta_n;
 
@@ -322,22 +327,25 @@ void Ukf::execute_pipeline(){
     Eigen::Vector3d X_res;
     define_matrix_sigma_points();
     define_initial_conditions();
-    double norm = 1.0;
+    double norm = get_error(X_n);
     int iter_num = 0;
-    while (norm > 0.04) {
+    while (norm > 0.05) {
         Teta_before = Teta_n;
         prediction();
         update_covariances();
         correction();
         collect_backup_data();
         Teta_after = Teta_n;
+        /*
         Task task;
         set_up_task(task, Teta_after);
         run_task(task, X_res);
         norm = get_error(X_res);
+        */
+        norm = get_error(X_n);
         logger << "iter_num : " << ++iter_num << std::endl;
         logger << "norm : " << norm << std::endl;
-        logger << "X_res : \n" << X_res << std::endl;
+        // logger << "X_res : \n" << X_res << std::endl;
         logger << "-------------------------------------------------------------------" << std::endl;
     }
     logger << "parameters were selected for (" << Z(0, 0) << "," << Z(1, 0) << "," << Z(2, 0)  << ")" << std::endl;

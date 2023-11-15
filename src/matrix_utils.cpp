@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <json.hpp>
+#include <vector>
 using json = nlohmann::json;
 
 double string_to_double(std::string& s) {
@@ -42,6 +43,27 @@ void read_csv_matrix(std::ifstream &stream, Eigen::MatrixXd &m, const int &str_n
                 m(i, col_nums - 1) = string_to_double(line);
                 ++i;
         }
+}
+
+void csv_to_array_of_strings(std::ifstream &stream, std::vector<std::vector<std::string>> &arr, const int &str_nums, const int &col_nums) {
+    std::string line;
+    std::string part;
+    std::string sep = ",";
+
+    arr.resize(str_nums);
+
+    int i = 0;
+    while(getline(stream, line)) {
+        int finish = 0;
+        for (int j = 0; j < col_nums - 1; ++j) {
+            part = line.substr(0, line.find(sep));
+            finish = line.find(sep) + 1;
+            line.erase(0, finish);
+            arr[i].push_back(part);
+        }
+        arr[i].push_back(line);
+        ++i;
+    }
 }
 
 void set_hr(const double &HR, const std::string &config_path) {

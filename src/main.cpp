@@ -67,6 +67,35 @@ void run_detailed(std::string base_path, Eigen::MatrixXd &Teta, const int &age, 
     clear_current_configs(base_path, age);
 }
 
+// here blood config is defined harder than just base age. there is a variotions inside this age by diameter and pwv
+void run_detailed_two_configs(std::string base_path, const int &age, const double &HR, Eigen::MatrixXd &Teta, std::string path_to_base_blood_config) {
+    std::string base_heart_path = base_path + "/data/configs/base_configs/heart_config_" + std::to_string(age) + ".json";
+    std::string current_heart_path = base_path + "/data/configs/current_configs/heart_config.json";
+    std::filesystem::copy_file(base_heart_path, current_heart_path);
+    set_hr(HR, current_heart_path);
+
+    std::string current_blood_path = base_path + "/data/configs/current_configs/blood_config.json";
+    std::filesystem::copy_file(path_to_base_blood_config, current_blood_path);
+
+    DetailedRun runner(base_path, current_blood_path, current_heart_path, Teta);
+    runner.run_task();
+
+    std::filesystem::remove_all(base_path + "/data/configs/current_configs");
+    std::filesystem::create_directory(base_path + "/data/configs/current_configs");
+}
+
+void displayMatrix(std::vector<std::vector<std::string> > v)
+{
+    int N = v.size();
+    int M = v[0].size();
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            std::cout << v[i][j] << " ";
+        }
+        std::cout << "\n";
+    }
+}
+
 int main(int argc, char *argv[]) {
     std::string base_path = argv[0];
     std::cout << base_path << std::endl;
@@ -85,6 +114,7 @@ int main(int argc, char *argv[]) {
     std::filesystem::create_directory(base_path + "/data/out");
 
     std::string mode = argv[1];
+    std::cout << mode << std::endl;
 
     if (mode == "-manual") {
         std::cout << atoi(argv[2]) << "," << atof(argv[3]) << "," << atof(argv[4]) << "," << atof(argv[5]) << "," << atof(argv[6]) << std::endl;
@@ -121,6 +151,24 @@ int main(int argc, char *argv[]) {
         // age,SBP,DBP,SV,HR
         std::cout << atoi(argv[2]) << "," << atof(argv[3]) << "," << atof(argv[4]) << "," << atof(argv[5]) << "," << atof(argv[6]) << std::endl;
         run_backup_ukf(base_path, atoi(argv[2]), atof(argv[3]), atof(argv[4]), atof(argv[5]), atof(argv[6]));
+    }
+    else if (mode == "-detailed_config") {
+        const int num_tests = atoi(argv[2]);
+        std::ifstream detailed_run_config(base_path + "/data/configs/detailed_run_config.csv");
+        std::vector<std::vector<std::string>> cases;
+        csv_to_array_of_strings(detailed_run_config, cases, num_tests, 4);
+        displayMatrix(cases);
+        std::string path_to_back = base_path + "/data/back/";
+        std::string path_to_config = base_path + "/data/configs/";
+        for (int i = 0; i < num_tests; ++i) {
+            Eigen::MatrixXd Teta_dynamic;
+            std::ifstream param_file(path_to_back + cases[i][2] + "/Teta_n.csv");
+            read_csv_matrix(param_file, Teta_dynamic, 7, 1);
+            run_detailed_two_configs(base_path, stoi(cases[i][0]), stod(cases[i][1]), Teta_dynamic, path_to_config + cases[i][3]);
+            std::filesystem::copy(base_path + "/data/out", path_to_back + cases[i][2]);
+            std::filesystem::remove_all(base_path + "/data/out");
+            std::filesystem::create_directory(base_path + "/data/out");
+        }
     }
     else {
         std::cout << "ERR: Choose option" << std::endl;

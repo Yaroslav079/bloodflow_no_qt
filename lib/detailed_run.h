@@ -20,6 +20,14 @@ public:
         rescaler.init(this -> blood_path);
     }
 
+    DetailedRun(const std::string base_path, const std::string &blood_path, const std::string &heart_path, Eigen::MatrixXd &Teta) {
+        this -> Teta = Teta;
+        this -> base_path = base_path;
+        this -> blood_path = blood_path;
+        this -> heart_path = heart_path;
+        rescaler.init(this -> blood_path);
+    }
+
     void run_task() {
         Task task;
         task.set_base_path(base_path);
@@ -31,7 +39,6 @@ public:
         X(0) = task.P_sys;
         X(1) = task.P_dis;
         X(2) = task.get_strokeVolume();
-
     }
 
 
