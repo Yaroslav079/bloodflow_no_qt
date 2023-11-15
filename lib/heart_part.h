@@ -240,10 +240,10 @@ public:
           R1(LV_dynamicResistanceCoeff),
           I4(LA_inertiaCoeff),
           R4(LA_dynamicResistanceCoeff),
-          Period(Period) //,
-          // Ts1(Ts1)
+          Period(Period),
+          Ts1(Ts1)
     {
-        this -> Ts1 = Ts1 * Period;
+        // this -> Ts1 = Ts1 * Period; it was already normed by period!!!! check task.h constructor of thue_0d_heart
         Ts2 = this -> Ts1 + Period * 0.15;
         // Ts1 = 0.3 * Period;
         // Ts2 = 0.35 * Period;

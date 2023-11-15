@@ -9,6 +9,7 @@ include_directories(ext)
 
 find_package (Eigen3 3.4.0 REQUIRED)
 find_package(OpenMP REQUIRED)
+find_library(MATH_LIBRARY m)
 
 set (HEADERS
     lib/bayes_runner.h
@@ -48,9 +49,6 @@ CHECK_CXX_COMPILER_FLAG(-march=native COMPILER_SUPPORTS_MARCH_NATIVE)
 if(COMPILER_SUPPORTS_MARCH_NATIVE)
     target_compile_options(${PROJECT_NAME} PUBLIC -march=native)
 endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Xpreprocessor")
-set(CMAKE_CXX_FLAGS_RELEASE         "-O3")
 
 target_include_directories(${PROJECT} PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")
 target_link_libraries(${PROJECT} PUBLIC Eigen3::Eigen)

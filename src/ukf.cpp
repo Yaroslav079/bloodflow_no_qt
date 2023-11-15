@@ -324,7 +324,7 @@ void Ukf::execute_pipeline(){
     define_initial_conditions();
     double norm = 1.0;
     int iter_num = 0;
-    while (norm > 0.03) {
+    while (norm > 0.04) {
         Teta_before = Teta_n;
         prediction();
         update_covariances();

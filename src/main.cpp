@@ -69,8 +69,15 @@ void run_detailed(std::string base_path, Eigen::MatrixXd &Teta, const int &age, 
 
 int main(int argc, char *argv[]) {
     std::string base_path = argv[0];
+    std::cout << base_path << std::endl;
+
     base_path = base_path.substr(0, base_path.find_last_of('/'));
     base_path = base_path.substr(0, base_path.find_last_of('/'));
+    
+    // TODO : uncomment before cluster build
+    base_path.append("/rogov_a_v");
+
+    std::cout << base_path << std::endl;
 
     std::filesystem::remove_all(base_path + "/data/configs/current_configs");
     std::filesystem::remove_all(base_path + "/data/out");
