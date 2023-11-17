@@ -47,7 +47,7 @@ Ukf::Ukf(const double& P_sys, const double& P_dis, const double& SV, std::string
     this -> base_path = base_path;
 };
 
-void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 8> &Teta) {
+void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 10> &Teta) {
     typedef ::Edge<Eigen::Matrix, double, Eigen::Dynamic> Edge;
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
 
@@ -61,10 +61,11 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 8> &Teta) {
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_PveinPressure(Teta(2));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_Kp(Teta(3));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_Kf(Teta(4));
+    dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I4(Teta(8));
+    dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I1(Teta(9));
 }
 
-// DEPRECATED
-void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 8> &Teta, const std::string blood_config, const std::string heart_config, const std::string base_path, Rescaler &rescaler) {
+void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 10> &Teta, const std::string blood_config, const std::string heart_config, const std::string base_path, Rescaler &rescaler) {
     typedef ::Edge<Eigen::Matrix, double, Eigen::Dynamic> Edge;
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
 
@@ -78,6 +79,8 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 8> &Teta, const st
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_PveinPressure(Teta(2));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_Kp(Teta(3));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_Kf(Teta(4));
+    dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I4(Teta(8));
+    dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I1(Teta(9));
 }
 
 void Ukf::run_task(Task &task, Eigen::Vector3d& X) {
@@ -148,7 +151,7 @@ void Ukf::define_initial_conditions() {
     // new way of defining based on closer base
     Eigen::MatrixXd Teta_dynamic;
     std::ifstream param_file(base_path + "/data/back/base.csv");
-    read_csv_matrix(param_file, Teta_dynamic, 8, 1);
+    read_csv_matrix(param_file, Teta_dynamic, 10, 1);
     Teta_n = Teta_dynamic;
     param_file.close();
     Task task;
@@ -165,7 +168,7 @@ void Ukf::define_initial_conditions() {
     if (restore_from_backup) {
         backup_istream_Teta_n.open(path_to_backup + "Teta_n.csv");
         Eigen::MatrixXd Teta_n_dyn;
-        read_csv_matrix(backup_istream_Teta_n, Teta_n_dyn, 8, 1);
+        read_csv_matrix(backup_istream_Teta_n, Teta_n_dyn, 10, 1);
         Teta_n = Teta_n_dyn;
         backup_istream_Teta_n.close();
 
@@ -193,19 +196,19 @@ void Ukf::define_initial_conditions() {
         logger << "restored\n";
         backup_istream_L_x.open(path_to_backup + "L_x.csv");
         Eigen::MatrixXd L_x_dyn;
-        read_csv_matrix(backup_istream_L_x, L_x_dyn, 3, 8);
+        read_csv_matrix(backup_istream_L_x, L_x_dyn, 3, 10);
         L_x = L_x_dyn;
         backup_istream_L_x.close();
 
         backup_istream_L_teta.open(path_to_backup + "L_teta.csv");
         Eigen::MatrixXd L_teta_dyn;
-        read_csv_matrix(backup_istream_L_teta, L_teta_dyn, 8, 8);
+        read_csv_matrix(backup_istream_L_teta, L_teta_dyn, 10, 10);
         L_teta = L_teta_dyn;
         backup_istream_L_teta.close();
 
         backup_istream_U.open(path_to_backup + "U.csv");
         Eigen::MatrixXd U_dyn;
-        read_csv_matrix(backup_istream_U, U_dyn, 8, 8);
+        read_csv_matrix(backup_istream_U, U_dyn, 10, 10);
         U = U_dyn;
         backup_istream_U.close();
     }
@@ -345,6 +348,14 @@ void Ukf::execute_pipeline(){
         norm = get_error(X_n);
         logger << "iter_num : " << ++iter_num << std::endl;
         logger << "norm : " << norm << std::endl;
+        if (norm < 0.05) {
+            Task task;
+            set_up_task(task, Teta_after);
+            run_task(task, X_res);
+            norm = get_error(X_res);
+            logger << "norm_res : " << norm << std::endl;
+            logger << "X_res : \n" << X_res << std::endl;
+        }
         // logger << "X_res : \n" << X_res << std::endl;
         logger << "-------------------------------------------------------------------" << std::endl;
     }

@@ -18,7 +18,7 @@ private:
     std::string read_path;
     std::string write_path;
     time_t last_modification;
-    Eigen::Vector<double, 8> Teta;
+    Eigen::Vector<double, 10> Teta;
     Eigen::Vector3d X;
 
     Rescaler rescaler;
