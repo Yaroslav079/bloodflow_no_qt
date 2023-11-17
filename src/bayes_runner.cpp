@@ -78,7 +78,7 @@ void BayesRunner::read_point() {
     Eigen::MatrixXd Teta_dyn;
 
     istream.open(read_path);
-    read_csv_matrix(istream, Teta_dyn, 7, 1);
+    read_csv_matrix(istream, Teta_dyn, 8, 1);
     Teta = Teta_dyn;
 }
 

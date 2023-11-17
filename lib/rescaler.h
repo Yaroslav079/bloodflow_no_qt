@@ -34,6 +34,14 @@ private:
         return {R_1, R_2};
     }
 
+    void set_p_out(const double &p_out) {
+        for (auto mv: config["MetaVertices"].items()) {
+            if (mv.value()["Type"].template get<std::string>() == "Windkessel_vertex") {
+                mv.value()["P_out"] = p_out;
+            }
+        }
+    }
+
 public:
     Rescaler() {}
 
@@ -83,9 +91,10 @@ public:
         }
     }
 
-    void create_wk_distribution(const double &total_res, const double &total_comp) {
+    void create_wk_distribution(const double &total_res, const double &total_comp, const double &p_out) {
         create_wk_resistance_distribution(total_res);
         create_wk_compliance_distribution(total_comp);
+        set_p_out(p_out);
         write_json(config_path, config);
     }
 
