@@ -12,8 +12,8 @@ class Ukf
 public:
     Ukf(const double& P_sys, const double& P_dis, const double& SV, const std::string blood_config, const std::string heart_config, const std::string base_path, bool restore_from_backup = false);
     void execute_pipeline();
-    void set_up_task(Task &task, const Eigen::Vector<double, 10> &Teta);
-    static void set_up_task(Task &task, const Eigen::Vector<double, 10> &Teta, const std::string blood_config, const std::string heart_config, const std::string base_path, Rescaler &rescaler);
+    void set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta);
+    static void set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta, const std::string blood_config, const std::string heart_config, const std::string base_path, Rescaler &rescaler);
     static void run_task(Task &task, Eigen::Vector3d& X);
 
 private:
@@ -34,7 +34,7 @@ private:
     bool restore_from_backup;
     std::string blood_config;
     std::string heart_config;
-    const static int p = 10; // number of params
+    const static int p = 12; // number of params
     const static int k = 3; // number of target variables
     const double sigma_param_sqr = 1e-2;
     const double sigma_obs_sqr = 1.0;

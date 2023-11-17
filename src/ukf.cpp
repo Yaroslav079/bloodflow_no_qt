@@ -47,14 +47,14 @@ Ukf::Ukf(const double& P_sys, const double& P_dis, const double& SV, std::string
     this -> base_path = base_path;
 };
 
-void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 10> &Teta) {
+void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta) {
     typedef ::Edge<Eigen::Matrix, double, Eigen::Dynamic> Edge;
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
 
     std::cout << "params to run : \n";
     std::cout << Teta << std::endl;
     task.set_path_to_brachial_data(this -> base_path);
-    rescaler.create_wk_distribution(Teta(6), Teta(5), Teta(7));
+    rescaler.create_wk_distribution(Teta(6), Teta(5), Teta(7), Teta(10), Teta(11));
     task.set_up(this -> blood_config, this -> heart_config);
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R4(Teta(0));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R1(Teta(1));
@@ -65,14 +65,14 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 10> &Teta) {
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I1(Teta(9));
 }
 
-void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 10> &Teta, const std::string blood_config, const std::string heart_config, const std::string base_path, Rescaler &rescaler) {
+void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta, const std::string blood_config, const std::string heart_config, const std::string base_path, Rescaler &rescaler) {
     typedef ::Edge<Eigen::Matrix, double, Eigen::Dynamic> Edge;
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
 
     std::cout << "params to run : \n";
     std::cout << Teta << std::endl;
     task.set_path_to_brachial_data(base_path);
-    rescaler.create_wk_distribution(Teta(6), Teta(5), Teta(7));
+    rescaler.create_wk_distribution(Teta(6), Teta(5), Teta(7), Teta(10), Teta(11));
     task.set_up(blood_config, heart_config);
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R4(Teta(0));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R1(Teta(1));
@@ -151,7 +151,7 @@ void Ukf::define_initial_conditions() {
     // new way of defining based on closer base
     Eigen::MatrixXd Teta_dynamic;
     std::ifstream param_file(base_path + "/data/back/base.csv");
-    read_csv_matrix(param_file, Teta_dynamic, 10, 1);
+    read_csv_matrix(param_file, Teta_dynamic, 12, 1);
     Teta_n = Teta_dynamic;
     param_file.close();
     Task task;
@@ -168,7 +168,7 @@ void Ukf::define_initial_conditions() {
     if (restore_from_backup) {
         backup_istream_Teta_n.open(path_to_backup + "Teta_n.csv");
         Eigen::MatrixXd Teta_n_dyn;
-        read_csv_matrix(backup_istream_Teta_n, Teta_n_dyn, 10, 1);
+        read_csv_matrix(backup_istream_Teta_n, Teta_n_dyn, 11, 1);
         Teta_n = Teta_n_dyn;
         backup_istream_Teta_n.close();
 
@@ -196,19 +196,19 @@ void Ukf::define_initial_conditions() {
         logger << "restored\n";
         backup_istream_L_x.open(path_to_backup + "L_x.csv");
         Eigen::MatrixXd L_x_dyn;
-        read_csv_matrix(backup_istream_L_x, L_x_dyn, 3, 10);
+        read_csv_matrix(backup_istream_L_x, L_x_dyn, 3, 12);
         L_x = L_x_dyn;
         backup_istream_L_x.close();
 
         backup_istream_L_teta.open(path_to_backup + "L_teta.csv");
         Eigen::MatrixXd L_teta_dyn;
-        read_csv_matrix(backup_istream_L_teta, L_teta_dyn, 10, 10);
+        read_csv_matrix(backup_istream_L_teta, L_teta_dyn, 12, 12);
         L_teta = L_teta_dyn;
         backup_istream_L_teta.close();
 
         backup_istream_U.open(path_to_backup + "U.csv");
         Eigen::MatrixXd U_dyn;
-        read_csv_matrix(backup_istream_U, U_dyn, 10, 10);
+        read_csv_matrix(backup_istream_U, U_dyn, 12, 12);
         U = U_dyn;
         backup_istream_U.close();
     }
