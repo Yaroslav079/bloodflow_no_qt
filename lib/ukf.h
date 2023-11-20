@@ -36,7 +36,7 @@ private:
     std::string heart_config;
     const static int p = 12; // number of params
     const static int k = 3; // number of target variables
-    const double sigma_param_sqr = 1e-2;
+    const double sigma_param_sqr = 1e-3;
     const double sigma_obs_sqr = 1.0;
     const double alpha = 1.0 / (p + 1); // weight of sigma-point
     Eigen::DiagonalMatrix<double, k> P_z;

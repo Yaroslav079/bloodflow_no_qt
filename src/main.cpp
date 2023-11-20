@@ -84,18 +84,6 @@ void run_detailed_two_configs(std::string base_path, const int &age, const doubl
     std::filesystem::create_directory(base_path + "/data/configs/current_configs");
 }
 
-void displayMatrix(std::vector<std::vector<std::string> > v)
-{
-    int N = v.size();
-    int M = v[0].size();
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) {
-            std::cout << v[i][j] << " ";
-        }
-        std::cout << "\n";
-    }
-}
-
 int main(int argc, char *argv[]) {
     std::string base_path = argv[0];
     std::cout << base_path << std::endl;
@@ -104,7 +92,7 @@ int main(int argc, char *argv[]) {
     base_path = base_path.substr(0, base_path.find_last_of('/'));
     
     // TODO : uncomment before cluster build
-    base_path.append("/rogov_a_v");
+    // base_path.append("/rogov_a_v");
 
     std::cout << base_path << std::endl;
 
@@ -138,7 +126,7 @@ int main(int argc, char *argv[]) {
         std::string path_to_params = argv[4];
         std::ifstream param_file(base_path + "/" + path_to_params);
         Eigen::MatrixXd Teta_dynamic;
-        read_csv_matrix(param_file, Teta_dynamic, 7, 1);
+        read_csv_matrix(param_file, Teta_dynamic, 12, 1);
         std::cout << age << "," << Teta_dynamic << std::endl;
         run_detailed(base_path, Teta_dynamic, age, HR);
     }
@@ -152,20 +140,26 @@ int main(int argc, char *argv[]) {
         std::cout << atoi(argv[2]) << "," << atof(argv[3]) << "," << atof(argv[4]) << "," << atof(argv[5]) << "," << atof(argv[6]) << std::endl;
         run_backup_ukf(base_path, atoi(argv[2]), atof(argv[3]), atof(argv[4]), atof(argv[5]), atof(argv[6]));
     }
+
+    // in this case structure of csv config will be : age,HR,smth/params/path_to_teta.csv,path_to_base_blood_config.json
+    // results will be smth/back/name_of_case
     else if (mode == "-detailed_config") {
         const int num_tests = atoi(argv[2]);
         std::ifstream detailed_run_config(base_path + "/data/configs/detailed_run_config.csv");
         std::vector<std::vector<std::string>> cases;
         csv_to_array_of_strings(detailed_run_config, cases, num_tests, 4);
-        displayMatrix(cases);
-        std::string path_to_back = base_path + "/data/back/";
         std::string path_to_config = base_path + "/data/configs/";
         for (int i = 0; i < num_tests; ++i) {
             Eigen::MatrixXd Teta_dynamic;
-            std::ifstream param_file(path_to_back + cases[i][2] + "/Teta_n.csv");
-            read_csv_matrix(param_file, Teta_dynamic, 7, 1);
+            std::ifstream param_file(cases[i][2]);
+            read_csv_matrix(param_file, Teta_dynamic, 12, 1);
             run_detailed_two_configs(base_path, stoi(cases[i][0]), stod(cases[i][1]), Teta_dynamic, path_to_config + cases[i][3]);
-            std::filesystem::copy(base_path + "/data/out", path_to_back + cases[i][2]);
+            std::string name_of_case = cases[i][2].substr(cases[i][2].find_last_of('/') + 1, 10);
+            std::string path_to_back = cases[i][2].substr(0, cases[i][2].find_last_of('/'));
+            path_to_back = path_to_back.substr(0, path_to_back.find_last_of('/'));
+            path_to_back = path_to_back + "/back/" + name_of_case;
+            std::filesystem::create_directory(path_to_back);
+            std::filesystem::copy(base_path + "/data/out", path_to_back);
             std::filesystem::remove_all(base_path + "/data/out");
             std::filesystem::create_directory(base_path + "/data/out");
         }
