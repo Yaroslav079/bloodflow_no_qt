@@ -77,8 +77,6 @@ public:
         config_stream >> config;
         config_stream.close();
 
-        // write_json("/home/artem/Documents/work/sechenov/bloodflow-main/custom-configs/start.json", config);
-
         for (auto mv: config["MetaVertices"].items()) {
             if (mv.value()["Type"].template get<std::string>() == "Windkessel_vertex") {
                 std::string id = mv.key();

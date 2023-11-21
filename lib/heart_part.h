@@ -61,7 +61,8 @@ protected:
 
     const double thetamax = thetamax1_n*r2d;
     const double thetamin = thetamin1_n*r2d;
-    const double thetamin_mr = 60.0 * r2d;
+    const double thetamin_aortic_reg = 0.0 * r2d;
+    const double thetamin_mitral_reg = 30.0 * r2d;
     const int thetaPower = 4;
     const double AR0 = std::pow(1-cos(thetamax), thetaPower);
 
@@ -114,12 +115,13 @@ protected:
     const double veps = 1e-6; //maybe doesnt work with 0? not sure
 
     double AR (const double & y);
-
     double AR_y (const double & y);
 
-    double AR_mr(const double & y);
+    double AR_aortic_reg(const double & y);
+    double AR_aortic_reg_y (const double & y);
 
-    double AR_mr_y (const double & y);
+    double AR_mitral_reg(const double & y);
+    double AR_mitral_reg_y (const double & y);
 
 
     //coefficient of resistance force in the valve
@@ -132,10 +134,14 @@ protected:
 
     double Kr_yy (const double & y);
 
-    // for mitral valve regurgitation test
-    double Kr_mr (const double & y);
-    double Kr_mr_y (const double & y);
-    double Kr_mr_yy (const double & y);
+    // for aoric valve regurgitation test
+    double Kr_aortic_reg (const double & y);
+    double Kr_aortic_reg_y (const double & y);
+    double Kr_aortic_reg_yy (const double & y);
+
+    double Kr_mitral_reg (const double & y);
+    double Kr_mitral_reg_y (const double & y);
+    double Kr_mitral_reg_yy (const double & y);
 
 
 
@@ -147,10 +153,12 @@ protected:
     double Fr (const double & y2);
     double Fr_d (const double & y2);
 
-    //resistance force for mitral regurgitation test
-    double Fr_mr (const double & y2);
-    double Fr_mr_d (const double & y2);
+    //resistance force for aortic regurgitation test
+    double Fr_aortic_reg (const double & y2);
+    double Fr_aortic_reg_d (const double & y2);
 
+    double Fr_mitral_reg (const double & y2);
+    double Fr_mitral_reg_d (const double & y2);
 
     //pressure force
     double Fp (const double & Pfrom, const double & Pto, const double & tet);
@@ -166,14 +174,17 @@ protected:
 
     double L_mi_inverse();
 
-
-
-
     double valve_area(const double & valve_state);
     double valve_area_d(const double & valve_state);
 
     double valve_area_MI(const double & valve_state);
     double valve_area_MI_d(const double & valve_state);
+
+    double valve_area_aortic_reg(const double & valve_state);
+    double valve_area_aortic_reg_d(const double & valve_state);
+
+    double valve_area_mitral_reg(const double & valve_state);
+    double valve_area_mitral_reg_d(const double & valve_state);
 
 
     double R_av(const double & av_state);
@@ -188,9 +199,15 @@ protected:
     double B_av_dAv_state(const double & av_state, const double & aorta_area);
     double B_av_dAorta_area(const double & av_state, const double & aorta_area);
 
+    double B_av_aortic_reg(const double & av_state, const double & aorta_area);
+    double B_av_dAv_state_aortic_reg(const double & av_state, const double & aorta_area);
+    double B_av_dAorta_area_aortic_reg(const double & av_state, const double & aorta_area);
+
     double B_mi(const double & mi_state);
     double B_mi_dMi_state(const double & mi_state);
 
+    double B_mi_mitral_reg(const double & mi_state);
+    double B_mi_dMi_state_mitral_reg(const double & mi_state);
 
     void set_heart_part_parameters(std::vector<ParameterBlock> & blocks);
 

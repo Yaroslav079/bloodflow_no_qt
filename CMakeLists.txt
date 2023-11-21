@@ -19,6 +19,7 @@ set (HEADERS
     lib/edge.h
     lib/graph.h
     lib/heart_advanced_valves.h
+    lib/heart_aortic_reg.h
     lib/heart_part.h
     lib/matrix_utils.h
     lib/rcrwindkessel.h

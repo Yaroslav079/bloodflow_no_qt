@@ -8,6 +8,7 @@
 #include "vertex.h"
 #include "rcrwindkessel.h"
 #include "heart_advanced_valves.h"
+#include "heart_aortic_reg.h"
 #include <fstream>
 
 /**
@@ -61,6 +62,7 @@ struct Task
 
     typedef ::True_0d_heart<Edge, Eigen::Matrix, double, Eigen::Dynamic> True_0d_heart;
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
+    typedef ::Heart_Aortic_Reg<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_Aortic_Reg;
 
     double virtual_time; // time inside a model
     double time_max = 8.942; // max time inside a model
@@ -146,8 +148,54 @@ public:
             vertices.push_back(true_0d_heart);
             heart = true_0d_heart;
             time_max = 10.0 * heart_period;
+        }
+        else if (type == "Heart_Aortic_Reg") {
+            Edge * e;
+            try {
+                e = edge_map.at(mv.value()["edge"].template get<std::string>());
+            } catch (const std::out_of_range &) {
+                throw(GraphConfigError(mv.key() + ": cannot find its edge among Edges"));
+            }
+            Simple_vertex * sv;
+            try {
+                sv = map_pop(s_vert_map, mv.value()["vertex"].template get<std::string>());
+                //sv = s_vert_map.at(mv.value()["vertex"].template get<std::string>());
+            } catch (const std::out_of_range &) {
+                throw(GraphConfigError(mv.key() + ": cannot find its vertex among SimpleVertices"));
+            }
+            if (!e->test_connection(sv))
+                throw(GraphConfigError(mv.key() + ": edge " + e->get_id() + " does not have a required Simple_vertex"));
 
-        } else if (type == "Internal") {
+            double heart_period = 60.0 / mv.value()["Heart_rate"].template get<double>();
+            true_0d_heart =  new Heart_Aortic_Reg(mv.key(), e, sv, density, viscosity,
+                    mv.value()["L_av"].template get<double>(),
+                    mv.value()["L_pu"].template get<double>(),
+                    mv.value()["L_mi"].template get<double>(),
+                    mv.value()["B_pu_const"].template get<double>(),
+                    mv.value()["B_av_denomin"].template get<double>(),
+                    mv.value()["B_mi_denomin"].template get<double>(),
+                    mv.value()["pulmVeinsPressure"].template get<double>(),
+                    mv.value()["LV_initialVolume"].template get<double>(),
+                    mv.value()["LV_V0"].template get<double>(),
+                    mv.value()["LA_V0"].template get<double>(),
+                    mv.value()["LV_ESPVR"].template get<double>(),
+                    mv.value()["LV_EDPVR"].template get<double>(),
+                    mv.value()["LA_ESPVR"].template get<double>(),
+                    mv.value()["LA_EDPVR"].template get<double>(),
+                    mv.value()["valvePressureForceCoeff"].template get<double>(),
+                    mv.value()["valveFrictionalForceCoeff"].template get<double>(),
+                    mv.value()["LV_inertiaCoeff"].template get<double>(),
+                    mv.value()["LV_dynamicResistanceCoeff"].template get<double>(),
+                    mv.value()["LA_inertiaCoeff"].template get<double>(),
+                    mv.value()["LA_dynamicResistanceCoeff"].template get<double>(),
+                    heart_period,
+                    heart_period * mv.value()["T_sys"].template get<double>()
+                    );
+            vertices.push_back(true_0d_heart);
+            heart = true_0d_heart;
+            time_max = 10.0 * heart_period;
+        }
+        else if (type == "Internal") {
             Simple_vertex * sv;
             try {
                 sv = map_pop(s_vert_map, mv.value()["vertex"].template get<std::string>());
@@ -332,6 +380,8 @@ public:
 
     //void set_pump_LV_pressure_mmHg(const double &p);
     double get_strokeVolume();
+    double get_aortic_reg();
+    double get_mitral_reg();
     double get_aortic_valve();
     double get_mitral_valve();
     //double tprev;

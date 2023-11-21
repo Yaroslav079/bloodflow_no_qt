@@ -1,3 +1,3 @@
-25,73.0,/home/artem/Documents/work/sechenov/build_experiments/logs_78/params/1700451196.csv,base_configs/blood_config_25.json
-25,82.1,/home/artem/Documents/work/sechenov/build_experiments/logs_78/params/1700451635.csv,base_configs/blood_config_25.json
-25,63.9,/home/artem/Documents/work/sechenov/build_experiments/logs_78/params/1700452337.csv,base_configs/blood_config_25.json
+73.0,/home/artem/Documents/work/sechenov/build_experiments/logs_81/params/1700464154.csv,base_configs/blood_config_25.json,base_configs/heart_config_25_aortic_reg.json
+82.1,/home/artem/Documents/work/sechenov/build_experiments/logs_81/params/1700464927.csv,base_configs/blood_config_25.json,base_configs/heart_config_25_aortic_reg.json
+63.9,/home/artem/Documents/work/sechenov/build_experiments/logs_81/params/1700465633.csv,base_configs/blood_config_25.json,base_configs/heart_config_25_aortic_reg.json

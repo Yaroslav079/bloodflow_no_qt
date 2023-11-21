@@ -68,10 +68,9 @@ void run_detailed(std::string base_path, Eigen::MatrixXd &Teta, const int &age, 
 }
 
 // here blood config is defined harder than just base age. there is a variotions inside this age by diameter and pwv
-void run_detailed_two_configs(std::string base_path, const int &age, const double &HR, Eigen::MatrixXd &Teta, std::string path_to_base_blood_config) {
-    std::string base_heart_path = base_path + "/data/configs/base_configs/heart_config_" + std::to_string(age) + ".json";
+void run_detailed_two_configs(std::string base_path, const double &HR, Eigen::MatrixXd &Teta, std::string path_to_base_blood_config, std::string path_to_base_heart_config) {
     std::string current_heart_path = base_path + "/data/configs/current_configs/heart_config.json";
-    std::filesystem::copy_file(base_heart_path, current_heart_path);
+    std::filesystem::copy_file(path_to_base_heart_config, current_heart_path);
     set_hr(HR, current_heart_path);
 
     std::string current_blood_path = base_path + "/data/configs/current_configs/blood_config.json";
@@ -86,7 +85,6 @@ void run_detailed_two_configs(std::string base_path, const int &age, const doubl
 
 int main(int argc, char *argv[]) {
     std::string base_path = argv[0];
-    std::cout << base_path << std::endl;
 
     base_path = base_path.substr(0, base_path.find_last_of('/'));
     base_path = base_path.substr(0, base_path.find_last_of('/'));
@@ -94,15 +92,12 @@ int main(int argc, char *argv[]) {
     // TODO : uncomment before cluster build
     // base_path.append("/rogov_a_v");
 
-    std::cout << base_path << std::endl;
-
     std::filesystem::remove_all(base_path + "/data/configs/current_configs");
     std::filesystem::remove_all(base_path + "/data/out");
     std::filesystem::create_directory(base_path + "/data/configs/current_configs");
     std::filesystem::create_directory(base_path + "/data/out");
 
     std::string mode = argv[1];
-    std::cout << mode << std::endl;
 
     if (mode == "-manual") {
         std::cout << atoi(argv[2]) << "," << atof(argv[3]) << "," << atof(argv[4]) << "," << atof(argv[5]) << "," << atof(argv[6]) << std::endl;
@@ -151,13 +146,15 @@ int main(int argc, char *argv[]) {
         std::string path_to_config = base_path + "/data/configs/";
         for (int i = 0; i < num_tests; ++i) {
             Eigen::MatrixXd Teta_dynamic;
-            std::ifstream param_file(cases[i][2]);
+            std::ifstream param_file(cases[i][1]);
             read_csv_matrix(param_file, Teta_dynamic, 12, 1);
-            run_detailed_two_configs(base_path, stoi(cases[i][0]), stod(cases[i][1]), Teta_dynamic, path_to_config + cases[i][3]);
-            std::string name_of_case = cases[i][2].substr(cases[i][2].find_last_of('/') + 1, 10);
-            std::string path_to_back = cases[i][2].substr(0, cases[i][2].find_last_of('/'));
+            run_detailed_two_configs(base_path, stod(cases[i][0]), Teta_dynamic, path_to_config + cases[i][2], path_to_config + cases[i][3]);
+            std::string name_of_case = cases[i][1].substr(cases[i][1].find_last_of('/') + 1, 10);
+            std::string path_to_back = cases[i][1].substr(0, cases[i][1].find_last_of('/'));
             path_to_back = path_to_back.substr(0, path_to_back.find_last_of('/'));
-            path_to_back = path_to_back + "/back/" + name_of_case;
+            path_to_back = path_to_back + "/back/reg_30" + name_of_case;
+            std::filesystem::create_directory(path_to_back);
+            path_to_back = path_to_back + "/csv";
             std::filesystem::create_directory(path_to_back);
             std::filesystem::copy(base_path + "/data/out", path_to_back);
             std::filesystem::remove_all(base_path + "/data/out");

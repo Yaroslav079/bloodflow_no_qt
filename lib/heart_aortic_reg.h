@@ -1,5 +1,5 @@
-#ifndef HEART_ADVANCED_VALVES_H
-#define HEART_ADVANCED_VALVES_H
+#ifndef HEART_AORTIC_REG
+#define HEART_AORTIC_REG
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +14,7 @@
 
 template<typename Edge,
          template<typename, int, int ...> typename Matrix, typename Scalar, auto Dynamic>
-class Heart_AdValves:
+class Heart_Aortic_Reg:
     public True_0d_heart<Edge, Matrix, Scalar, Dynamic>, public Heart_part
 {
     typedef True_0d_heart<Edge, Matrix, Scalar, Dynamic> Base;
@@ -33,8 +33,6 @@ class Heart_AdValves:
 
     enum {v_v, v_v_d, v_a, v_a_d, ao_valve, ao_valve_d, mi_valve, mi_valve_d, q_av, q_mi, q_pu,
           a_aorta, p_vent, p_aort, p_atri};
-
-    // y0 << initLVvolume, 0, 20, 0, 0.01, 0, 0.01, 0, 1, 1, 1, 7.9, 20, 80, P_pulmonary;
 
     //edge starting from this node
     Edge * e;
@@ -60,17 +58,17 @@ class Heart_AdValves:
 
         d(ao_valve) = y(ao_valve_d);
 
-        d(ao_valve_d) = -Fr(y(ao_valve)) - Ff(y(ao_valve_d)) + Fp(y(p_vent), y(p_aort), y(ao_valve));
+        d(ao_valve_d) = -Fr_aortic_reg(y(ao_valve)) - Ff(y(ao_valve_d)) + Fp(y(p_vent), y(p_aort), y(ao_valve));
 
         d(mi_valve) = y(mi_valve_d);
 
-        d(mi_valve_d) = -Fr(y(mi_valve)) - Ff(y(mi_valve_d)) + Fp(y(p_atri), y(p_vent), y(mi_valve));
+        d(mi_valve_d) = -Fr_mitral_reg(y(mi_valve)) - Ff(y(mi_valve_d)) + Fp(y(p_atri), y(p_vent), y(mi_valve));
 
 
-        d(q_av) = (y(p_vent) - y(p_aort) - B_av(y(ao_valve), y(a_aorta)) * y(q_av) * fabs(y(q_av))) / L_av;
+        d(q_av) = (y(p_vent) - y(p_aort) - B_av_aortic_reg(y(ao_valve), y(a_aorta)) * y(q_av) * fabs(y(q_av))) / L_av;
 
 
-        d(q_mi) = (y(p_atri) - y(p_vent) - B_mi(y(mi_valve)) * y(q_mi) * fabs(y(q_mi))) / L_mi;
+        d(q_mi) = (y(p_atri) - y(p_vent) - B_mi_mitral_reg(y(mi_valve)) * y(q_mi) * fabs(y(q_mi))) / L_mi;
 
         d(q_pu) = (P_pulmonary - y(p_atri) - B_pu() * y(q_pu) * fabs(y(q_pu)) ) / L_pu;
 
@@ -95,14 +93,14 @@ class Heart_AdValves:
 
         d(ao_valve, ao_valve_d) = 1;
 
-        d(ao_valve_d, ao_valve) = -Fr_d(y(ao_valve)) + Fp_dTet(y(p_vent), y(p_aort), y(ao_valve));
+        d(ao_valve_d, ao_valve) = -Fr_aortic_reg_d(y(ao_valve)) + Fp_dTet(y(p_vent), y(p_aort), y(ao_valve));
         d(ao_valve_d, ao_valve_d) = - Ff_tet_d(y(ao_valve_d));
         d(ao_valve_d, p_vent) = Fp_dPfrom(y(p_vent), y(p_aort), y(ao_valve));
         d(ao_valve_d, p_aort) = Fp_dPto(y(p_vent), y(p_aort), y(ao_valve));
 
         d(mi_valve, mi_valve_d) = 1;
 
-        d(mi_valve_d, mi_valve) = -Fr_d(y(mi_valve)) + Fp_dTet(y(p_atri), y(p_vent), y(mi_valve));
+        d(mi_valve_d, mi_valve) = -Fr_mitral_reg_d(y(mi_valve)) + Fp_dTet(y(p_atri), y(p_vent), y(mi_valve));
         d(mi_valve_d, mi_valve_d) = - Ff_tet_d(y(mi_valve_d)) ;
         d(mi_valve_d, p_atri) = Fp_dPfrom(y(p_atri), y(p_vent), y(mi_valve));
         d(mi_valve_d, p_vent) = Fp_dPto(y(p_atri), y(p_vent), y(mi_valve));
@@ -110,27 +108,27 @@ class Heart_AdValves:
 
 
         d(q_av, a_aorta) = L_av_inverse_d(y(a_aorta)) * (y(p_vent) - y(p_aort) - R_av(y(ao_valve)) * y(q_av)
-                                         - B_av(y(ao_valve), y(a_aorta)) * y(q_av) * fabs(y(q_av)))
+                                         - B_av_aortic_reg(y(ao_valve), y(a_aorta)) * y(q_av) * fabs(y(q_av)))
 
-                           + L_av_inverse(y(a_aorta)) * (- B_av_dAorta_area(y(ao_valve), y(a_aorta)) * y(q_av) * fabs(y(q_av)));
+                           + L_av_inverse(y(a_aorta)) * (- B_av_dAorta_area_aortic_reg(y(ao_valve), y(a_aorta)) * y(q_av) * fabs(y(q_av)));
 
         d(q_av, p_vent) = L_av_inverse(y(a_aorta));
         d(q_av, p_aort) = L_av_inverse(y(a_aorta)) * ( -1);
         d(q_av, ao_valve) = L_av_inverse(y(a_aorta)) * ( - R_av_d(y(ao_valve)) * y(q_av)
-                                         - B_av_dAv_state(y(ao_valve), y(a_aorta)) * y(q_av) * fabs(y(q_av)));
+                                         - B_av_dAv_state_aortic_reg(y(ao_valve), y(a_aorta)) * y(q_av) * fabs(y(q_av)));
 
         d(q_av, q_av) = L_av_inverse(y(a_aorta)) * (- R_av(y(ao_valve))
-                                         - B_av(y(ao_valve), y(a_aorta)) * 2 * fabs(y(q_av)));
+                                         - B_av_aortic_reg(y(ao_valve), y(a_aorta)) * 2 * fabs(y(q_av)));
 
 
 
         d(q_mi, p_atri) = L_mi_inverse();
         d(q_mi, p_vent) = L_mi_inverse() * (-1);
         d(q_mi, mi_valve) = L_mi_inverse() * ( - R_av_d(y(mi_valve)) * y(q_mi)
-                                              - B_mi_dMi_state(y(mi_valve)) * y(q_mi) * fabs(y(q_mi)));
+                                              - B_mi_dMi_state_mitral_reg(y(mi_valve)) * y(q_mi) * fabs(y(q_mi)));
 
         d(q_mi, q_mi) = L_mi_inverse() * ( - R_av(y(mi_valve))
-                                          - B_mi(y(mi_valve)) * 2 * fabs(y(q_mi)));
+                                          - B_mi_mitral_reg(y(mi_valve)) * 2 * fabs(y(q_mi)));
 
 
 
@@ -246,7 +244,7 @@ public:
         else
             return 0.0;
     }
-
+    
     double get_flow_av_bwd() {
         if (y0(q_av) < 0.0)
             return -y0(q_av);
@@ -368,7 +366,7 @@ public:
         }
     }
 
-    Heart_AdValves(const std::string & id, Edge * e, Simple_vertex * sv,
+    Heart_Aortic_Reg(const std::string & id, Edge * e, Simple_vertex * sv,
               double density,
               double viscosity,
 
@@ -418,7 +416,7 @@ public:
       e(e), sv(sv)
     {
         //see config try initLVvolume = 130 for healthy heart
-        y0 << initLVvolume, 0, 20, 0, 0.01, 0, 0.01, 0, 1, 1, 1, 7.9, 20, 80, P_pulmonary;
+        y0 << initLVvolume, 0, 20, 0, 0.01, 0, 1.0, 0, 1, 1, 1, 7.9, 20, 80, P_pulmonary;
         y2prev = y0;
         B.setZero();
         R.setZero();

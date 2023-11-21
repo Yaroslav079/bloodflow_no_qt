@@ -67,13 +67,15 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta) {
 
 void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta, const std::string blood_config, const std::string heart_config, const std::string base_path, Rescaler &rescaler) {
     typedef ::Edge<Eigen::Matrix, double, Eigen::Dynamic> Edge;
-    typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
+    // typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
+    typedef ::Heart_Aortic_Reg<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_Aortic_Reg;
 
     std::cout << "params to run : \n";
     std::cout << Teta << std::endl;
     task.set_path_to_brachial_data(base_path);
     rescaler.create_wk_distribution(Teta(6), Teta(5), Teta(7), Teta(10), Teta(11));
     task.set_up(blood_config, heart_config);
+    /*
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R4(Teta(0));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R1(Teta(1));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_PveinPressure(Teta(2));
@@ -81,6 +83,14 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta, const s
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_Kf(Teta(4));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I4(Teta(8));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I1(Teta(9));
+    */
+    dynamic_cast<Heart_Aortic_Reg*>(task.true_0d_heart) -> set_R4(Teta(0));
+    dynamic_cast<Heart_Aortic_Reg*>(task.true_0d_heart) -> set_R1(Teta(1));
+    dynamic_cast<Heart_Aortic_Reg*>(task.true_0d_heart) -> set_PveinPressure(Teta(2));
+    dynamic_cast<Heart_Aortic_Reg*>(task.true_0d_heart) -> set_Kp(Teta(3));
+    dynamic_cast<Heart_Aortic_Reg*>(task.true_0d_heart) -> set_Kf(Teta(4));
+    dynamic_cast<Heart_Aortic_Reg*>(task.true_0d_heart) -> set_I4(Teta(8));
+    dynamic_cast<Heart_Aortic_Reg*>(task.true_0d_heart) -> set_I1(Teta(9));
 }
 
 void Ukf::run_task(Task &task, Eigen::Vector3d& X) {

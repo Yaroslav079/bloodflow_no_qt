@@ -249,6 +249,14 @@ public:
     }
     virtual double get_flow_av_fwd() = 0;
 
+    double get_aortic_regurgitation_fraction() {
+        return get_av_flow_bwd_val() / get_av_flow_fwd_val();
+    }
+
+    double get_mitral_regurgitation_fraction() {
+        return get_mv_flow_bwd_val() / get_mv_flow_fwd_val();
+    }
+
     double get_mv_flow_bwd_val() {
         return mv_flow_bwd.value();
     }

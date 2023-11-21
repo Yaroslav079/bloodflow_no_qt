@@ -19,29 +19,6 @@ double Heart_part::e10 (const double & tcurr) {
         return 0;
 
     }
-/*
-
-
-    //double hill
-    double T_max = 0.2 + 0.15;
-    double tn = t/T_max;
-    return 2*1.55*std::pow(tn/0.7, 1.9)
-           / ((1 + std::pow(tn/0.7, 1.9) ) * (1 + std::pow(tn/1.17, 21.9)));
-*/
-/*
-    double T1 = 0.05, T2 = 0.3, T3 = 0.4;
-    double res;
-    if (t < T1)
-        res =  (std::exp(t/T1) - 1)/(M_E - 1)*0.4;
-    else if ( t < T2 )
-        res =   (1 + (T2-t)/(T2-T1)*std::log(t/T1)) *0.4 + (t-T1)/(T2-T1)*t*3;
-    else if ( t < T3)
-        res = (1.0 - cos((t - T3)*M_PI/(T2-T3)))/2*1.2962;
-    else
-        res = 0;
-    res = res/1.2962*2;
-    return res;
-*/
 }
 
 
@@ -63,33 +40,6 @@ double Heart_part::e10_t (const double & tcurr) {
         return 0;
 
     }
-
-
-/*
-    //double hill
-    double T_max = 0.2 + 0.15;
-    double tn = t/T_max;
-    double g = ((1 + std::pow(tn/0.7, 1.9) ) * (1 + std::pow(tn/1.17, 21.9)));
-    double f =  std::pow(tn/0.7, 1.9);
-    double fp = 1.9/std::pow(0.7,1.9)*std::pow(tn,0.9);
-    double gp = (1 + std::pow(tn/1.17, 21.9))*fp + (1 + std::pow(tn/0.7, 1.9) ) * 21.9/std::pow(1.17,  21.9) * std::pow(tn, 20.9);
-    return 2*1.55/T_max/(g*g)*(g*fp - f*gp);
-*/
-
-/*
-    double T1 = 0.05, T2 = 0.3, T3 = 0.4;
-    double res;
-    if (t < T1)
-        res =  (std::exp(t/T1)/T1)/(M_E - 1)*0.4;
-    else if ( t < T2 )
-        res =   ( -std::log(t/T1) + (T2-t)/t ) *0.4/(T2-T1) + (t-T1)/(T2-T1)*3 + t*3/(T2-T1);
-    else if ( t < T3)
-        res = (sin((t - T3)*M_PI/(T2-T3)))  /2*1.2962 * M_PI/(T2-T3);
-    else
-        res = 0;
-    res = res/1.2962*2;
-    return res;
-*/
 }
 
 double Heart_part::e40 (const double & tcurr) {
@@ -123,49 +73,7 @@ double Heart_part::e40_t (const double & tcurr) {
 
     }
 }
-/*
-    double Heart_part::e40 (const double & tcurr) {
 
-        const double t = tnorm(tcurr);
-        assert(t >= 0);
-        const double t1 = 0.07;
-        const double t2 = 0.03;
-        if (t < Tpb) {
-
-            return 0;
-
-        } else if (t < Tpb + t1) {
-
-            return 1.0 - cos((t - Tpb) * M_PI / t1);
-
-        } else {
-
-            return 1.0 - cos((Tpb + t1 + t2 - t) * M_PI / t2);
-
-        }
-    }
-
-    double Heart_part::e40_t (const double & tcurr) {
-
-        const double t = tnorm(tcurr);
-        assert(t >= 0);
-        const double t1 = 0.07;
-        const double t2 = 0.03;
-        if (t < Tpb) {
-
-            return 0;
-
-        } else if (t < Tpb + t1) {
-
-            return sin((t - Tpb) * M_PI / t1)* M_PI / t1;
-
-        } else {
-
-            return  sin((t - Tpb - t1) * M_PI / (t2 - t1))* M_PI / (t2 - t1);
-
-        }
-    }
-*/
 double Heart_part::e1 (const double & t) {
 
     return E1d + (E1s - E1d) * e10(t) / 2.0;
@@ -208,9 +116,26 @@ double Heart_part::AR (const double & y) {
     }
 }
 
-double Heart_part::AR_mr (const double & y) {
+double Heart_part::AR_aortic_reg (const double & y) {
 
-    if (y <= thetamin_mr) {
+    if (y <= thetamin_aortic_reg) {
+
+        return veps;
+
+    } else if (y >= thetamax) {
+
+        return 1;
+
+    } else {
+
+        return (1-veps)*std::pow(1-cos(y), thetaPower)/AR0 + veps;
+
+    }
+}
+
+double Heart_part::AR_mitral_reg (const double & y) {
+
+    if (y <= thetamin_mitral_reg) {
 
         return veps;
 
@@ -238,9 +163,22 @@ double Heart_part::AR_y (const double & y) {
     }
 }
 
-double Heart_part::AR_mr_y (const double & y) {
+double Heart_part::AR_aortic_reg_y (const double & y) {
 
-    if (y < thetamax && y > thetamin) {
+    if (y < thetamax && y > thetamin_aortic_reg) {
+
+        return (1-veps)*thetaPower*std::pow(1-cos(y), thetaPower - 1)*sin(y)/AR0;
+
+    } else {
+
+        return 0;
+
+    }
+}
+
+double Heart_part::AR_mitral_reg_y (const double & y) {
+
+    if (y < thetamax && y > thetamin_mitral_reg) {
 
         return (1-veps)*thetaPower*std::pow(1-cos(y), thetaPower - 1)*sin(y)/AR0;
 
@@ -281,88 +219,65 @@ double Heart_part::Kr_yy (const double & y) {
     }
 }
 
-double Heart_part::Kr_mr (const double & y) {
+double Heart_part::Kr_aortic_reg (const double & y) {
     if (y >= thetamax) {
         return expm1(ec*(y-thetamax));
-    } else if (y <= thetamin_mr+thetaeps) {
-        return -expm1(ec*(thetamin_mr+thetaeps-y));
+    } else if (y <= thetamin_aortic_reg+thetaeps) {
+        return -expm1(ec*(thetamin_aortic_reg+thetaeps-y));
     } else {
         return 0;
     }
 }
 
-double Heart_part::Kr_mr_y (const double & y) {
+double Heart_part::Kr_aortic_reg_y (const double & y) {
     if (y >= thetamax) {
         return ec*exp(ec*(y-thetamax));
-    } else if (y <= thetamin_mr+thetaeps) {
-        return ec*exp(ec*(thetamin_mr+thetaeps-y));
+    } else if (y <= thetamin_aortic_reg+thetaeps) {
+        return ec*exp(ec*(thetamin_aortic_reg+thetaeps-y));
     } else {
         return 0;
     }
 }
 
-double Heart_part::Kr_mr_yy (const double & y) {
+double Heart_part::Kr_aortic_reg_yy (const double & y) {
     if (y >= thetamax) {
         return ec*ec*exp(ec*(y-thetamax));
-    } else if (y <= thetamin_mr+thetaeps) {
-        return -ec*ec*exp(ec*(thetamin_mr+thetaeps-y));
+    } else if (y <= thetamin_aortic_reg+thetaeps) {
+        return -ec*ec*exp(ec*(thetamin_aortic_reg+thetaeps-y));
     } else {
         return 0;
     }
 }
 
-/*
-double Heart_part::Kr (const double & y) {
-
+double Heart_part::Kr_mitral_reg (const double & y) {
     if (y >= thetamax) {
-
-        return Kr0+1000000*atan(10*(y-thetamax));
-
-    } else if (y <= thetamin) {
-
-        return Kr0-1000000*atan(10*(y-thetamin));
-
-    } else {
-
-        return Kr0;
-
-    }
-}
-
-double Heart_part::Kr_y (const double & y) {
-
-    if (y >= thetamax) {
-
-        return 10000000/(100*(y-thetamax)*(y-thetamax)+1);
-
-    } else if (y <= thetamin) {
-
-        return -10000000/(100*(y-thetamin)*(y-thetamin)+1);
-
-    } else {
-
-        return 0;
-
-    }
-}
-
-double Heart_part::Kr_yy (const double & y) {
-
-    if (y >= thetamax) {
-
-        return -(2000000000*(y-thetamax))/
-        ((100*(y-thetamax)*(y-thetamax)+1)*(100*(y-thetamax)*(y-thetamax)+1));
-
-    } else if (y <= thetamin) {
-
-        return (2000000*(y-thetamin))/
-        ((100*(y-thetamin)*(y-thetamin)+1)*(100*(y-thetamin)*(y-thetamin)+1));
-
+        return expm1(ec*(y-thetamax));
+    } else if (y <= thetamin_mitral_reg+thetaeps) {
+        return -expm1(ec*(thetamin_mitral_reg+thetaeps-y));
     } else {
         return 0;
     }
 }
-*/
+
+double Heart_part::Kr_mitral_reg_y (const double & y) {
+    if (y >= thetamax) {
+        return ec*exp(ec*(y-thetamax));
+    } else if (y <= thetamin_mitral_reg+thetaeps) {
+        return ec*exp(ec*(thetamin_mitral_reg+thetaeps-y));
+    } else {
+        return 0;
+    }
+}
+
+double Heart_part::Kr_mitral_reg_yy (const double & y) {
+    if (y >= thetamax) {
+        return ec*ec*exp(ec*(y-thetamax));
+    } else if (y <= thetamin_mitral_reg+thetaeps) {
+        return -ec*ec*exp(ec*(thetamin_mitral_reg+thetaeps-y));
+    } else {
+        return 0;
+    }
+}
 
 double Heart_part::Ff (const double & y3) {
     return Kf*y3;
@@ -380,14 +295,21 @@ double Heart_part::Fr_d (const double & y2) {
     return Kr_y(y2);
 }
 
-double Heart_part::Fr_mr (const double & y2) {
-    return Kr_mr(y2);
+double Heart_part::Fr_aortic_reg (const double & y2) {
+    return Kr_aortic_reg(y2);
 }
 
-double Heart_part::Fr_mr_d (const double & y2) {
-    return Kr_mr_y(y2);
+double Heart_part::Fr_aortic_reg_d (const double & y2) {
+    return Kr_aortic_reg_y(y2);
 }
 
+double Heart_part::Fr_mitral_reg (const double & y2) {
+    return Kr_mitral_reg(y2);
+}
+
+double Heart_part::Fr_mitral_reg_d (const double & y2) {
+    return Kr_mitral_reg_y(y2);
+}
 
 double Heart_part::Fp (const double & Pfrom, const double & Pto, const double & tet) {
     return Kp*(Pfrom - Pto) * cos(tet);
@@ -426,10 +348,6 @@ double Heart_part::R_pu()
     return 0;
 }
 
-
-
-
-
 double Heart_part::valve_area(const double & valve_state)
 {
     return 4 * AR(valve_state);
@@ -446,6 +364,20 @@ double Heart_part::valve_area_MI(const double & valve_state)
 double Heart_part::valve_area_MI_d(const double & valve_state)
 {
     return 4 * AR_y(valve_state);//5
+}
+
+double Heart_part::valve_area_aortic_reg(const double & valve_state) {
+    return 4 * AR_aortic_reg(valve_state);
+}
+double Heart_part::valve_area_aortic_reg_d(const double & valve_state) {
+    return 4 * AR_aortic_reg_y(valve_state);
+}
+
+double Heart_part::valve_area_mitral_reg(const double & valve_state) {
+    return 4 * AR_mitral_reg(valve_state);
+}
+double Heart_part::valve_area_mitral_reg_d(const double & valve_state) {
+    return 4 * AR_mitral_reg_y(valve_state);
 }
 
 double Heart_part::B_pu()
@@ -479,6 +411,26 @@ double Heart_part::B_av_dAorta_area(const double & av_state, const double & aort
             / std::pow(aorta_area, 2) / B_av_denomin;
 }
 
+double Heart_part::B_av_aortic_reg(const double & av_state, const double & aorta_area) {
+    const double Kt = 1;
+    const double av_area = valve_area_aortic_reg(av_state);
+    return density * Kt/2 *
+            std::pow(1.0/av_area - 1.0/aorta_area, 2) / B_av_denomin;
+}
+double Heart_part::B_av_dAv_state_aortic_reg(const double & av_state, const double & aorta_area) {
+    const double Kt = 1;
+    const double av_area = valve_area_aortic_reg(av_state);
+    return - density * Kt *
+            (1.0/av_area - 1.0/aorta_area) / std::pow(av_area, 2)
+            * valve_area_aortic_reg_d(av_state) / B_av_denomin;
+}
+double Heart_part::B_av_dAorta_area_aortic_reg(const double & av_state, const double & aorta_area) {
+    const double Kt = 1;
+    const double av_area = valve_area_aortic_reg(av_state);
+    return density * Kt * (1.0/av_area - 1.0/aorta_area)
+            / std::pow(aorta_area, 2) / B_av_denomin;
+}
+
 double Heart_part::B_mi(const double & mi_state)
 {
     const double Kt = 1;
@@ -491,6 +443,18 @@ double Heart_part::B_mi_dMi_state(const double & mi_state)
     const double mi_area = valve_area_MI(mi_state);
     return - density * Kt * (1.0/mi_area - 1.0/5) / std::pow(mi_area, 2)
             * valve_area_MI_d(mi_state) / B_mi_denomin;
+}
+
+double Heart_part::B_mi_mitral_reg(const double & mi_state) {
+    const double Kt = 1;
+    const double mi_area = valve_area_mitral_reg(mi_state);
+    return density * Kt/2 * std::pow(1.0/mi_area - 1.0/5, 2) / B_mi_denomin;
+}
+double Heart_part::B_mi_dMi_state_mitral_reg(const double & mi_state) {
+    const double Kt = 1;
+    const double mi_area = valve_area_mitral_reg(mi_state);
+    return - density * Kt * (1.0/mi_area - 1.0/5) / std::pow(mi_area, 2)
+            * valve_area_mitral_reg_d(mi_state) / B_mi_denomin;
 }
 
 

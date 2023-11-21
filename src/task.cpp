@@ -381,6 +381,14 @@ double Task::get_strokeVolume()
         return -999;
 }
 
+double Task::get_aortic_reg() {
+    return heart -> get_aortic_regurgitation_fraction();
+}
+
+double Task::get_mitral_reg() {
+    return heart -> get_mitral_regurgitation_fraction();
+}
+
 double Task::get_aortic_valve()
 {
     if (true_0d_heart)
@@ -819,24 +827,6 @@ void Task::dump_data() {
 
     P_sys = P_s;
     P_dis = P_d;
-    /*
-    double av_flow_fwd = true_0d_heart -> get_av_flow_fwd_val();
-    double av_flow_bwd = true_0d_heart -> get_av_flow_bwd_val();
-    double mv_flow_fwd = true_0d_heart -> get_mv_flow_fwd_val();
-    double mv_flow_bwd = true_0d_heart -> get_mv_flow_bwd_val();
-    double av_rf = fabsl(av_flow_bwd / av_flow_fwd * 100.0);
-    double mv_rf = fabsl(mv_flow_bwd / mv_flow_fwd * 100.0);
-    double lvet = true_0d_heart -> get_lvet_val();
-    double pft = true_0d_heart -> get_pft_val();
-    */
 
-    std::cout << P_sys << "," << P_dis << "," << get_strokeVolume() << std::endl;
-    /*
-    std::cout << av_flow_fwd << "," << av_flow_bwd << "," << av_flow_fwd + av_flow_bwd << "," << av_rf << std::endl;
-    std::cout << mv_flow_fwd << "," << mv_flow_bwd << "," << mv_flow_fwd + mv_flow_bwd << "," << mv_rf << std::endl;
-    std::cout << lvet << "," << pft << std::endl;
-    */
-    // fout_dump << P_sys << "," << P_dis << "," << get_strokeVolume() << std::endl;
-
-    // fout_dump.close();
+    std::cout << P_sys << "," << P_dis << "," << get_strokeVolume() << "," << get_aortic_reg() * 100.0 << "," << get_mitral_reg() * 100.0 << std::endl;
 }
