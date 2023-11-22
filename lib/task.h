@@ -8,7 +8,7 @@
 #include "vertex.h"
 #include "rcrwindkessel.h"
 #include "heart_advanced_valves.h"
-#include "heart_aortic_reg.h"
+#include "heart_reg.h"
 #include <fstream>
 
 /**
@@ -62,7 +62,7 @@ struct Task
 
     typedef ::True_0d_heart<Edge, Eigen::Matrix, double, Eigen::Dynamic> True_0d_heart;
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
-    typedef ::Heart_Aortic_Reg<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_Aortic_Reg;
+    typedef ::Heart_Reg<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_Reg;
 
     double virtual_time; // time inside a model
     double time_max = 8.942; // max time inside a model
@@ -167,7 +167,7 @@ public:
                 throw(GraphConfigError(mv.key() + ": edge " + e->get_id() + " does not have a required Simple_vertex"));
 
             double heart_period = 60.0 / mv.value()["Heart_rate"].template get<double>();
-            true_0d_heart =  new Heart_Aortic_Reg(mv.key(), e, sv, density, viscosity,
+            true_0d_heart =  new Heart_Reg(mv.key(), e, sv, density, viscosity,
                     mv.value()["L_av"].template get<double>(),
                     mv.value()["L_pu"].template get<double>(),
                     mv.value()["L_mi"].template get<double>(),

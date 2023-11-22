@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
             std::string name_of_case = cases[i][1].substr(cases[i][1].find_last_of('/') + 1, 10);
             std::string path_to_back = cases[i][1].substr(0, cases[i][1].find_last_of('/'));
             path_to_back = path_to_back.substr(0, path_to_back.find_last_of('/'));
-            path_to_back = path_to_back + "/back/reg_30" + name_of_case;
+            path_to_back = path_to_back + "/back/aortic_reg40_" + name_of_case;
             std::filesystem::create_directory(path_to_back);
             path_to_back = path_to_back + "/csv";
             std::filesystem::create_directory(path_to_back);

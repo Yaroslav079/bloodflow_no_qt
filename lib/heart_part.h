@@ -61,8 +61,8 @@ protected:
 
     const double thetamax = thetamax1_n*r2d;
     const double thetamin = thetamin1_n*r2d;
-    const double thetamin_aortic_reg = 0.0 * r2d;
-    const double thetamin_mitral_reg = 30.0 * r2d;
+    const double thetamin_aortic_reg = 40.0 * r2d;
+    const double thetamin_mitral_reg = 0.0 * r2d;
     const int thetaPower = 4;
     const double AR0 = std::pow(1-cos(thetamax), thetaPower);
 
@@ -116,13 +116,6 @@ protected:
 
     double AR (const double & y);
     double AR_y (const double & y);
-
-    double AR_aortic_reg(const double & y);
-    double AR_aortic_reg_y (const double & y);
-
-    double AR_mitral_reg(const double & y);
-    double AR_mitral_reg_y (const double & y);
-
 
     //coefficient of resistance force in the valve
     const double ec = 1000;
@@ -180,13 +173,6 @@ protected:
     double valve_area_MI(const double & valve_state);
     double valve_area_MI_d(const double & valve_state);
 
-    double valve_area_aortic_reg(const double & valve_state);
-    double valve_area_aortic_reg_d(const double & valve_state);
-
-    double valve_area_mitral_reg(const double & valve_state);
-    double valve_area_mitral_reg_d(const double & valve_state);
-
-
     double R_av(const double & av_state);
 
     double R_av_d(const double & av_state);
@@ -199,15 +185,8 @@ protected:
     double B_av_dAv_state(const double & av_state, const double & aorta_area);
     double B_av_dAorta_area(const double & av_state, const double & aorta_area);
 
-    double B_av_aortic_reg(const double & av_state, const double & aorta_area);
-    double B_av_dAv_state_aortic_reg(const double & av_state, const double & aorta_area);
-    double B_av_dAorta_area_aortic_reg(const double & av_state, const double & aorta_area);
-
     double B_mi(const double & mi_state);
     double B_mi_dMi_state(const double & mi_state);
-
-    double B_mi_mitral_reg(const double & mi_state);
-    double B_mi_dMi_state_mitral_reg(const double & mi_state);
 
     void set_heart_part_parameters(std::vector<ParameterBlock> & blocks);
 
