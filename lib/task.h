@@ -149,7 +149,7 @@ public:
             heart = true_0d_heart;
             time_max = 10.0 * heart_period;
         }
-        else if (type == "Heart_Aortic_Reg") {
+        else if (type == "Heart_Reg") {
             Edge * e;
             try {
                 e = edge_map.at(mv.value()["edge"].template get<std::string>());

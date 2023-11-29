@@ -61,7 +61,7 @@ void run_detailed(std::string base_path, Eigen::MatrixXd &Teta, const int &age, 
     std::pair<std::string, std::string> current_paths(copy_base_config(base_path, age));
     set_hr(HR, current_paths.second);
 
-    DetailedRun runner(base_path, current_paths.first, current_paths.second, Teta, age, HR);
+    DetailedRun runner(base_path, current_paths.first, current_paths.second, Teta);
     runner.run_task();
 
     clear_current_configs(base_path, age);
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     base_path = base_path.substr(0, base_path.find_last_of('/'));
     
     // TODO : uncomment before cluster build
-    // base_path.append("/rogov_a_v");
+    base_path.append("/rogov_a_v");
 
     std::filesystem::remove_all(base_path + "/data/configs/current_configs");
     std::filesystem::remove_all(base_path + "/data/out");
@@ -122,7 +122,6 @@ int main(int argc, char *argv[]) {
         std::ifstream param_file(base_path + "/" + path_to_params);
         Eigen::MatrixXd Teta_dynamic;
         read_csv_matrix(param_file, Teta_dynamic, 12, 1);
-        std::cout << age << "," << Teta_dynamic << std::endl;
         run_detailed(base_path, Teta_dynamic, age, HR);
     }
     else if (mode == "-bayes") {

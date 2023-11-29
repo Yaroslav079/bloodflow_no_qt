@@ -8,6 +8,39 @@
 #include <json.hpp>
 using json = nlohmann::json;
 
+class ThreadException {
+public:
+    /** Default constructor */
+    ThreadException () {}
+
+    /** Returns the exception by pointer */
+    std::exception_ptr Get () const {
+        return ptr;
+    }
+
+    /** Rethrows the exception */
+    void Rethrow () {
+        if (ptr) {
+            std::rethrow_exception (ptr);
+        }
+    }
+
+    /** Run a function and capture any exception */
+    template <typename F>
+    void Run (F func) {
+        try {
+            func ();
+        } catch (...) {
+            ptr = std::current_exception ();
+        }
+    }
+
+private:
+    /** Exception pointer */
+    std::exception_ptr ptr;
+};
+
+
 Task::~Task()
 {
     for (auto &e: edges)
@@ -26,7 +59,13 @@ bool Task::is_valid()
 void Task::run_full(bool detailed_dump)
 {//TODO
     while (is_valid()) {
-        run_step(0, detailed_dump);
+        try {
+            run_step(0, detailed_dump);
+        }
+        catch(...) {
+            std::cout << "Error was catched in Task::run_full()" << std::endl;
+            throw("Calculation error");
+        }
     }
 
 }
@@ -238,6 +277,7 @@ void Task::run_step(double sim_timer, bool detailed_dump = false)
 {
     double t1 = omp_get_wtime();
     double local_max_abs_eigenvalue_div_dx = max_abs_eigenvalue_div_dx;
+    ThreadException except;
 #pragma omp parallel firstprivate(sim_timer, local_max_abs_eigenvalue_div_dx)
 {
     double time_cur = virtual_time;
@@ -265,7 +305,9 @@ local_max_abs_eigenvalue_div_dx = max_abs_eigenvalue_div_dx;
         for (unsigned long i = 0; i < vertices.size(); i++) {
             vertices[i]->set_dt(dt);
             vertices[i]->set_T(time_cur);
-            vertices[i]->update_boundary();
+            except.Run ([&] { // use the Run method of the ThreadException object
+                vertices[i]->update_boundary();
+            });
         }
     }
 
@@ -276,6 +318,8 @@ local_max_abs_eigenvalue_div_dx = max_abs_eigenvalue_div_dx;
 }
 
 }
+    except.Rethrow ();
+    
     double t3 = omp_get_wtime();
 
     computation_time += t3 - t1;
@@ -284,8 +328,8 @@ local_max_abs_eigenvalue_div_dx = max_abs_eigenvalue_div_dx;
             e->print_info(fout_brachial);
         }
     }
-    
-    if (detailed_dump) {
+
+    if ((detailed_dump) && (virtual_time > this -> time_max * 0.9)) {
         for (auto &e: edges) {
             std::ofstream fout = set_path_to_dump(e -> get_id());
             e->print_info(fout);

@@ -448,7 +448,7 @@ protected:
                 //Newton
                 if (j > MaxIt) {
                     j = 0;
-                    //yn = y0;
+                    yn = y0;
                     tau/=2;
                     t = ts + tau;
 
@@ -470,8 +470,6 @@ protected:
                     R0_norm = R.lpNorm<Eigen::Infinity>();
                 }
                 if (R.lpNorm<Eigen::Infinity>() < 1e-6 || R.lpNorm<Eigen::Infinity>() < 1e-14*R0_norm) {
-                   // std::cout << R.lpNorm<Eigen::Infinity>() << std::endl;
-
                     break;
                 }
                 B.setZero();
@@ -484,24 +482,10 @@ protected:
             }
             y2prev = y0;
             y0 = yn;
-    /*
-            const auto f_yynt = f_y(yn,t);
-            const auto eigenvalues = f_yynt.eigenvalues();
-            for (int i = 0; i < 8; i++) {
-                if (eigenvalues(i).real() > 1)
-                    cout << t << " " << eigenvalues(i) << endl;
-            }
-    */
             ts += tau;
             tau = T - ts;
         }
-/*
-        if (T >= 6 && T <= 7) {
-            ff++;
-            if (ff % 6 == 0)
-                std::cout << y0(v1) << " " << P1(y0(s), y0(tet51)) << std::endl;
-        }
-        */
+
         if (y0(v_v) < 0 || y0(v_a) < 0) {
             std::cout << "time: " << T << std::endl;
             std::cout << "LV vol/pressure: " << y0(v_v) << " " << y0(p_vent) << std::endl;
@@ -519,15 +503,7 @@ protected:
         const double S = y0(a_aorta);
         e->set_V_s(sv, 0, S);
         e->set_V_u(sv, 0, alfa*S + beta);
-        if (y0(q_pu) < -1) {
-            //std::cout << y0(q_pu) << std::endl;
-        }
-/*
-        if (fmod(T, 1.0) > 0.999) {
-            std::cout << T << " : " << this -> get_stroke_volume_av() << std::endl;
-        }
-*/
     }
 };
 
-#endif // HEART_ADVANCED_VALVES_H
+#endif // HEART_REG_H

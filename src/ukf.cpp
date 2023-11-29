@@ -67,15 +67,15 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta) {
 
 void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta, const std::string blood_config, const std::string heart_config, const std::string base_path, Rescaler &rescaler) {
     typedef ::Edge<Eigen::Matrix, double, Eigen::Dynamic> Edge;
-    // typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
-    typedef ::Heart_Reg<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_Reg;
+    typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
+    // typedef ::Heart_Reg<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_Reg;
 
     std::cout << "params to run : \n";
     std::cout << Teta << std::endl;
     task.set_path_to_brachial_data(base_path);
     rescaler.create_wk_distribution(Teta(6), Teta(5), Teta(7), Teta(10), Teta(11));
     task.set_up(blood_config, heart_config);
-    /*
+    
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R4(Teta(0));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_R1(Teta(1));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_PveinPressure(Teta(2));
@@ -83,7 +83,7 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta, const s
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_Kf(Teta(4));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I4(Teta(8));
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I1(Teta(9));
-    */
+    /*
     dynamic_cast<Heart_Reg*>(task.true_0d_heart) -> set_R4(Teta(0));
     dynamic_cast<Heart_Reg*>(task.true_0d_heart) -> set_R1(Teta(1));
     dynamic_cast<Heart_Reg*>(task.true_0d_heart) -> set_PveinPressure(Teta(2));
@@ -91,10 +91,17 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta, const s
     dynamic_cast<Heart_Reg*>(task.true_0d_heart) -> set_Kf(Teta(4));
     dynamic_cast<Heart_Reg*>(task.true_0d_heart) -> set_I4(Teta(8));
     dynamic_cast<Heart_Reg*>(task.true_0d_heart) -> set_I1(Teta(9));
+    */
 }
 
 void Ukf::run_task(Task &task, Eigen::Vector3d& X) {
-    task.run_full();
+    try {
+        task.run_full();
+    }
+    catch(...) {
+        std::cout << "Error was catched in Ukf::run_task()" << std::endl;
+        throw("Calculation error");
+    }
     task.dump_data();
 
     X(0) = task.P_sys;
@@ -255,14 +262,24 @@ void Ukf::prediction() {
         arr_X[i] = X_n + L_x * Cn.transpose() * I.col(i);
         arr_Teta[i] = Teta_n + L_teta * Cn.transpose() * I.col(i);
         correct_Teta(arr_Teta[i]);
-        logger << i << " :\n"<< arr_Teta[i] << std::endl;
     }
 
     for (int i = 0; i < p + 1; ++i) {
         Task task;
         std::cout << i << std::endl;
-        set_up_task(task, arr_Teta[i]);
-        run_task(task, arr_X_next[i]);
+        // set_up_task(task, arr_Teta[i]);
+        // logger << i << " :\n"<< arr_Teta[i] << std::endl;
+        // run_task(task, arr_X_next[i]);
+        try {
+            set_up_task(task, arr_Teta[i]);
+            logger << i << " :\n"<< arr_Teta[i] << std::endl;
+            run_task(task, arr_X_next[i]);
+        }
+        catch(...) {
+            std::cout << "Error was catched in Ukf::prediction()" << std::endl;
+            throw("Calculation error");
+        }
+        logger << i << "_res :\n"<< arr_X_next[i] << std::endl;
         arr_Teta_next[i] = arr_Teta[i];
     }
 
@@ -344,7 +361,15 @@ void Ukf::execute_pipeline(){
     int iter_num = 0;
     while (norm > 0.05) {
         Teta_before = Teta_n;
-        prediction();
+        try {
+            prediction();
+        }
+        catch (...) {
+            std::cout << "Error was catched in Ukf::execute_pipeline()" << std::endl;
+            logger << "Error occured during prediction" << std::endl;
+            logger << "Fixing results, go for next case" << std::endl;
+            break;
+        }
         update_covariances();
         correction();
         collect_backup_data();

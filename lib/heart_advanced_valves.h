@@ -448,7 +448,7 @@ protected:
                 //Newton
                 if (j > MaxIt) {
                     j = 0;
-                    //yn = y0;
+                    yn = y0;
                     tau/=2;
                     t = ts + tau;
 
@@ -459,9 +459,8 @@ protected:
                         std::cout << yn << std::endl;
                         std::cout << "Res error: " << R.lpNorm<Eigen::Infinity>() << std::endl;
 
-                        //break;
                         throw("Newton from Heart with Advanced valves failed");
-                     }
+                    }
                 }
 
                 R.head<11>() = yn.head<11>() - y0.head<11>() - tau * F(yn, t);
@@ -481,6 +480,7 @@ protected:
 
                 yn -= B.colPivHouseholderQr().solve(R);
                 j++;
+                // std::cout << j << "," << tau << "," << yn << std::endl;
             }
             y2prev = y0;
             y0 = yn;

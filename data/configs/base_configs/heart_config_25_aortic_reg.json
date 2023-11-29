@@ -2,7 +2,7 @@
     "__COMMENT": "Healthy heart model for 25 years old",
     "MetaVertices": {
         "Heart_AdValves_healthy": {
-            "Type": "Heart_Aortic_Reg",
+            "Type": "Heart_Reg",
             "edge": "aortic-arch-Ip0",
             "vertex": "heart",
             "pulmVeinsPressure": 13,

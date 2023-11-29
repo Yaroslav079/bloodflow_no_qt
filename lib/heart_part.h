@@ -61,7 +61,7 @@ protected:
 
     const double thetamax = thetamax1_n*r2d;
     const double thetamin = thetamin1_n*r2d;
-    const double thetamin_aortic_reg = 40.0 * r2d;
+    const double thetamin_aortic_reg = 0.0 * r2d;
     const double thetamin_mitral_reg = 0.0 * r2d;
     const int thetaPower = 4;
     const double AR0 = std::pow(1-cos(thetamax), thetaPower);

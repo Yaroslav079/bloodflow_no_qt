@@ -185,7 +185,13 @@ protected:
 public:
     void update_boundary()
     {
-        update();
+        try {
+            update();
+        }
+        catch(...) {
+            std::cout << "Error was catched in Vertex::update_boundary()" << std::endl;
+            throw("Calculation error");
+        }
         for (BaseTimeCalculator & calc: timeCalculators)
             calc.update(dt);
     }//need to think about the architecture

@@ -11,15 +11,6 @@
 
 class DetailedRun{
 public:
-    DetailedRun(const std::string base_path, const std::string &blood_path, const std::string &heart_path, Eigen::MatrixXd &Teta, const int &age, const double &HR) {
-        this -> Teta = Teta;
-        this -> HR = HR;
-        this -> base_path = base_path;
-        this -> blood_path = blood_path;
-        this -> heart_path = heart_path;
-        rescaler.init(this -> blood_path);
-    }
-
     DetailedRun(const std::string base_path, const std::string &blood_path, const std::string &heart_path, Eigen::MatrixXd &Teta) {
         this -> Teta = Teta;
         this -> base_path = base_path;
@@ -45,7 +36,6 @@ public:
 private:
     Eigen::Vector3d X;
     Eigen::MatrixXd Teta;
-    double HR;
     std::string base_path;
     std::string blood_path;
     std::string heart_path;
