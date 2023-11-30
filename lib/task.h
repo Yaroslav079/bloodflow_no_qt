@@ -143,7 +143,7 @@ public:
                     mv.value()["LA_inertiaCoeff"].template get<double>(),
                     mv.value()["LA_dynamicResistanceCoeff"].template get<double>(),
                     heart_period,
-                    heart_period * mv.value()["T_sys"].template get<double>()
+                    mv.value()["T_sys"].template get<double>()
                     );
             vertices.push_back(true_0d_heart);
             heart = true_0d_heart;
