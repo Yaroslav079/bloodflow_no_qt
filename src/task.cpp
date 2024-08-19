@@ -329,7 +329,7 @@ local_max_abs_eigenvalue_div_dx = max_abs_eigenvalue_div_dx;
         }
     }
 
-    if ((detailed_dump) && (virtual_time > this -> time_max * 0.9)) {
+    if ((detailed_dump) && (virtual_time > this -> time_max * 0.9) && (should_we_write())) {
         for (auto &e: edges) {
             std::ofstream fout = set_path_to_dump(e -> get_id());
             e->print_info(fout);

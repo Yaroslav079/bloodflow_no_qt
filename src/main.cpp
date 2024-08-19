@@ -86,11 +86,15 @@ void run_detailed_two_configs(std::string base_path, const double &HR, Eigen::Ma
 int main(int argc, char *argv[]) {
     std::string base_path = argv[0];
 
+    std::cout << "base_path : " << base_path << std::endl;
     base_path = base_path.substr(0, base_path.find_last_of('/'));
-    base_path = base_path.substr(0, base_path.find_last_of('/'));
+    std::cout << "base_path : " << base_path << std::endl;
+
+    // base_path = base_path.substr(0, base_path.find_last_of('/'));
+    // base_path = base_path.substr(0, base_path.find_last_of('/'));
     
     // TODO : uncomment before cluster build
-    base_path.append("/rogov_a_v");
+    // base_path.append("/rogov_a_v");
 
     std::filesystem::remove_all(base_path + "/data/configs/current_configs");
     std::filesystem::remove_all(base_path + "/data/out");
@@ -137,6 +141,9 @@ int main(int argc, char *argv[]) {
 
     // in this case structure of csv config will be : age,HR,smth/params/path_to_teta.csv,path_to_base_blood_config.json
     // results will be smth/back/name_of_case
+
+    // new configuration : HR,smth/back/Teta_n.csv,full path to blood_config,full path to heart_config
+    // results in smth/results
     else if (mode == "-detailed_config") {
         const int num_tests = atoi(argv[2]);
         std::ifstream detailed_run_config(base_path + "/data/configs/detailed_run_config.csv");
@@ -147,14 +154,16 @@ int main(int argc, char *argv[]) {
             Eigen::MatrixXd Teta_dynamic;
             std::ifstream param_file(cases[i][1]);
             read_csv_matrix(param_file, Teta_dynamic, 12, 1);
-            run_detailed_two_configs(base_path, stod(cases[i][0]), Teta_dynamic, path_to_config + cases[i][2], path_to_config + cases[i][3]);
-            std::string name_of_case = cases[i][1].substr(cases[i][1].find_last_of('/') + 1, 10);
+
+            std::cout << i + 1 << std::endl;
+
+            run_detailed_two_configs(base_path, stod(cases[i][0]), Teta_dynamic, cases[i][2], cases[i][3]);
+            
             std::string path_to_back = cases[i][1].substr(0, cases[i][1].find_last_of('/'));
-            path_to_back = path_to_back.substr(0, path_to_back.find_last_of('/'));
-            path_to_back = path_to_back + "/back/aortic_reg40_" + name_of_case;
+            path_to_back = path_to_back + "/results";
+            std::filesystem::remove_all(path_to_back);
             std::filesystem::create_directory(path_to_back);
-            path_to_back = path_to_back + "/csv";
-            std::filesystem::create_directory(path_to_back);
+
             std::filesystem::copy(base_path + "/data/out", path_to_back);
             std::filesystem::remove_all(base_path + "/data/out");
             std::filesystem::create_directory(base_path + "/data/out");

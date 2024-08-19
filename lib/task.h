@@ -10,6 +10,7 @@
 #include "heart_advanced_valves.h"
 #include "heart_reg.h"
 #include <fstream>
+#include <cmath>
 
 /**
  * @brief Error class to throw while reading config file with vascular graph
@@ -96,6 +97,9 @@ private:
     double density, viscosity, zeta, dx_step, gamma, terminalResistanceScaler;
     std::string path_to_brachial_data;
     std::ofstream fout_brachial;
+
+    int prev_quo = 0;
+    const double sampling_gap = 0.002; 
 public:
 
     template<typename Mjson>
@@ -415,6 +419,15 @@ public:
     void set_path_to_brachial_data(const std::string &base_path) {
         path_to_brachial_data = base_path + "/data/out/brachial.csv";
         fout_brachial.open(path_to_brachial_data);
+    }
+
+    bool should_we_write() {
+        if ((int)(virtual_time / sampling_gap) > prev_quo) {
+            prev_quo = (int)(virtual_time / sampling_gap);
+            return true;
+        }
+        else
+            return false;
     }
 
 };

@@ -140,6 +140,14 @@ public:
         return 1.0 / reverse_total_res;
     }
 
+    double get_p_out() {
+        for (auto mv: config["MetaVertices"].items()) {
+            if (mv.value()["Type"].template get<std::string>() == "Windkessel_vertex") {
+                return mv.value()["P_out"];
+            }
+        }
+    }
+
 };
 
 #endif

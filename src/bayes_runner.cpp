@@ -20,20 +20,39 @@ BayesRunner::BayesRunner(std::string base_path, const std::string blood_config, 
     this -> write_path.assign(base_path + "/data/share_folder/next_target.csv");
     rescaler.init(this -> blood_config);
 
+    if (!std::filesystem::exists(read_path)) {
+        std::ofstream read_file(read_path);
+        read_file.close();
+    }
     last_modification = std::filesystem::last_write_time(read_path).time_since_epoch().count();
 
+    // the way of first run like in ukf now
+
+    Eigen::MatrixXd Teta_dynamic;
+    std::ifstream param_file(base_path + "/data/back/base.csv");
+    read_csv_matrix(param_file, Teta_dynamic, 12, 1);
+    Teta = Teta_dynamic;
+    run_task();
+
+    /*
     Task task;
     task.set_path_to_brachial_data(base_path);
     task.set_up(this -> blood_config, this -> heart_config);
     Ukf::run_task(task, X);
+
     Teta(0) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_R4();
     Teta(1) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_R1();
     Teta(2) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_PveinPressure();
+    Teta(3) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_Kp();
+    Teta(4) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_Kf();    
     Teta(5) = rescaler.find_total_compliance();
     Teta(6) = rescaler.find_total_resistance();
-    Teta(3) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_Kp();
-    Teta(4) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_Kf();
-    // Teta(7) = rescaler.find_p_out();
+    Teta(7) = rescaler.get_p_out();
+    Teta(8) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_I4();
+    Teta(9) = dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> get_I1();
+    Teta(10) = 1.0;
+    Teta(11) = 1.0;
+    */
 
     write_initial_point();
 }

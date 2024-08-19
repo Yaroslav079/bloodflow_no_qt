@@ -49,6 +49,8 @@ unset(COMPILER_SUPPORTS_MARCH_NATIVE CACHE)
 CHECK_CXX_COMPILER_FLAG(-march=native COMPILER_SUPPORTS_MARCH_NATIVE)
 if(COMPILER_SUPPORTS_MARCH_NATIVE)
     target_compile_options(${PROJECT_NAME} PUBLIC -march=native)
+else()
+    message("No march_native support. Crusial for performance")
 endif()
 
 target_include_directories(${PROJECT} PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")

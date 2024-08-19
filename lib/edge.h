@@ -741,17 +741,6 @@ class EdgeClassicTubeLaw:
 protected:
     virtual void autoregulation() final
     {
-        /*
-        if (T > 8) {
-            //turn on autoregulation
-            if (first_time) {
-                //save p0
-                first_time = 0;
-                p0 = Base::get_mean_pressure();
-            }
-            c = c0 * sqrt(Base::get_mean_pressure() / p0);
-        }
-        */
         if (T > 3 && autoregulation_enabled)
             c = c0 * sqrt(Base::get_mean_pressure() / p0);
     }
@@ -792,11 +781,6 @@ public:
         autoregulation_enabled = 0;
         p0 = p0_val;
         point_mean_ind = points_num / 2;
-/*
-        std::string path_to_file("/home/artem/Documents/work/sechenov/bloodflow-main/out/data/");
-        path_to_file = path_to_file + name + ".csv";
-        fout.open(path_to_file);
-*/
     }
 
 protected:
