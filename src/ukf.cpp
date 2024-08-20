@@ -47,11 +47,12 @@ Ukf::Ukf(const double& P_sys, const double& P_dis, const double& SV, std::string
     this -> base_path = base_path;
 };
 
-void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta) {
+void Ukf::set_up_task(Task &task, Eigen::Vector<double, 12> &Teta) {
     typedef ::Edge<Eigen::Matrix, double, Eigen::Dynamic> Edge;
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
 
     std::cout << "params to run : \n";
+    Teta(11) = 0.5 * tanh(Teta(11) - 1.0) + 1.0;
     std::cout << Teta << std::endl;
     task.set_path_to_brachial_data(this -> base_path);
     rescaler.create_wk_distribution(Teta(6), Teta(5), Teta(7), Teta(10), Teta(11));
@@ -65,11 +66,13 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta) {
     dynamic_cast<Heart_AdValves*>(task.true_0d_heart) -> set_I1(Teta(9));
 }
 
+// unused now, for final test only
 void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta, const std::string blood_config, const std::string heart_config, const std::string base_path, Rescaler &rescaler) {
     typedef ::Edge<Eigen::Matrix, double, Eigen::Dynamic> Edge;
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
 
     std::cout << "params to run : \n";
+    // Teta(11) = 0.5 * tanh(Teta(11) - 1.0) + 1.0;
     std::cout << Teta << std::endl;
     task.set_path_to_brachial_data(base_path);
     rescaler.create_wk_distribution(Teta(6), Teta(5), Teta(7), Teta(10), Teta(11));

@@ -12,7 +12,7 @@ class Ukf
 public:
     Ukf(const double& P_sys, const double& P_dis, const double& SV, const std::string blood_config, const std::string heart_config, const std::string base_path, bool restore_from_backup = false);
     void execute_pipeline();
-    void set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta);
+    void set_up_task(Task &task, Eigen::Vector<double, 12> &Teta);
     static void set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta, const std::string blood_config, const std::string heart_config, const std::string base_path, Rescaler &rescaler);
     static void run_task(Task &task, Eigen::Vector3d& X);
 
