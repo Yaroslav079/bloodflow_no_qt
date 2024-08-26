@@ -24,6 +24,11 @@ private:
     double previous_p0_coeff = 1.0;
     double previous_pwv_coeff = 1.0;
 
+    const std::vector<std::string> specific_vessels = {"aortic-arch-Ip0", "aortic-arch-Ip1", "aortic-arch-Ip2", "aortic-arch-II", "aortic-arch-III", "aortic-arch-IV",
+                                                        "external-carotid-L", "internal-carotid-L", "common-carotid-L",
+                                                        "external-carotid-R", "internal-carotid-R", "common-carotid-R",
+                                                        "femoral-L-I", "femoral-L-II", "femoral-R-I", "femoral-R-II"};
+
     void write_json(const std::string &path, json json) {
         std::ofstream outfile;
         outfile.open(path);
@@ -58,10 +63,26 @@ private:
 
     void set_pwv(const double &coeff_pwv) {
         double c_pr;
+        double real_coeff_pwv = 0.5 * tanh(coeff_pwv - 1.0) + 1.0;
         for (auto mv: config["Edges"].items()) {
             if (mv.value()["Type"].template get<std::string>() == "Classic") {
                 c_pr = mv.value()["C"].template get<double>();
-                mv.value()["C"] = coeff_pwv * c_pr / previous_pwv_coeff;
+                mv.value()["C"] = real_coeff_pwv * c_pr / previous_pwv_coeff;
+            }
+        }
+        previous_pwv_coeff = real_coeff_pwv;
+    }
+
+    void set_pwv_to_specific_vessels(const double &coeff_pwv) {
+        double c_pr;
+        for (auto mv: config["Edges"].items()) {
+            std::string edge_name = mv.key();
+            if (std::find(specific_vessels.begin(), specific_vessels.end(), edge_name) != specific_vessels.end()) {
+                std::cout << edge_name << std::endl;
+                if (mv.value()["Type"].template get<std::string>() == "Classic") {
+                    c_pr = mv.value()["C"].template get<double>();
+                    mv.value()["C"] = coeff_pwv * c_pr / previous_pwv_coeff;
+                }
             }
         }
         previous_pwv_coeff = coeff_pwv;
@@ -90,6 +111,7 @@ public:
 
         for (const auto &item : diameter_info)
             diameter_sum += pow(item.second / d_1, p);
+
     }
 
     void create_wk_resistance_distribution(const double &total_res) {

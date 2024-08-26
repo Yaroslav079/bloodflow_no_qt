@@ -52,7 +52,6 @@ void Ukf::set_up_task(Task &task, Eigen::Vector<double, 12> &Teta) {
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
 
     std::cout << "params to run : \n";
-    Teta(11) = 0.5 * tanh(Teta(11) - 1.0) + 1.0;
     std::cout << Teta << std::endl;
     task.set_path_to_brachial_data(this -> base_path);
     rescaler.create_wk_distribution(Teta(6), Teta(5), Teta(7), Teta(10), Teta(11));
@@ -72,7 +71,6 @@ void Ukf::set_up_task(Task &task, const Eigen::Vector<double, 12> &Teta, const s
     typedef ::Heart_AdValves<Edge, Eigen::Matrix, double, Eigen::Dynamic> Heart_AdValves;
 
     std::cout << "params to run : \n";
-    // Teta(11) = 0.5 * tanh(Teta(11) - 1.0) + 1.0;
     std::cout << Teta << std::endl;
     task.set_path_to_brachial_data(base_path);
     rescaler.create_wk_distribution(Teta(6), Teta(5), Teta(7), Teta(10), Teta(11));
